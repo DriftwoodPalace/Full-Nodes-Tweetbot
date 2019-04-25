@@ -69,5 +69,4 @@ while True:
         "\nOf which was tor-nodes: " + str(run_tor())
     api.update_status(status=tweet)
     # Sleep 1h
-    print("sleep")
     sleep(60*60)
