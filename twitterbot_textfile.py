@@ -36,6 +36,8 @@ def execute(query, args={}):
     # Make a copy of the database
     try:
         shutil.copy('../crawler.db', 'server.db')
+        # HACK to make sure the copying finishes
+        sleep(60)
     except IOError as e:
         print("Unable to copy file. %s" % e)
     except:
