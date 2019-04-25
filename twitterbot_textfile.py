@@ -68,5 +68,5 @@ while True:
     tweet = "Total number of reachable nodes past week: " + str(run()) + \
         "\nOf which was tor-nodes: " + str(run_tor())
     api.update_status(status=tweet)
-    # Sleep 1h
-    sleep(60*60)
+    # Sleep 24h
+    sleep(60*60*24)
