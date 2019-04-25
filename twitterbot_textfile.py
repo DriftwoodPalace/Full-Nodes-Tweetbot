@@ -35,7 +35,7 @@ api = tweepy.API(auth)
 def execute(query, args={}):
     # Make a copy of the database
     try:
-        shutil.copy('crawler.db', 'server.db')
+        shutil.copy('../crawler.db', 'server.db')
     except IOError as e:
         print("Unable to copy file. %s" % e)
     except:
@@ -48,10 +48,11 @@ def node_count(node_dict):
     # Count all nodes visited last week
     i = 0
     num_nodes = 0
-    # Change to 8 for one week
-    while i < 5:
-        select_item = node_dict[i]
-        num_nodes += select_item[1]
+    check_last = node_dict[-1]
+    while i < 8:
+        if check_last[0] >= i:
+            select_item = node_dict[i]
+            num_nodes += select_item[1]
         i += 1
     return num_nodes
 
