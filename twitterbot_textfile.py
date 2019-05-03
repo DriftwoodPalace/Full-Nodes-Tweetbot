@@ -6,25 +6,36 @@ import tweepy
 import os
 import shutil
 
-select_nodes = """
-SELECT visits_missed, count(*) AS num_members
-FROM nodes
-WHERE id in (select node_id from connections)
-GROUP BY visits_missed
-ORDER BY visits_missed
+active_nodes = """
+select (
+	select count(distinct node_id) 
+	from connections 
+	where strftime('%s','now') - start < 60*60*24
+) as nodes_active_in_last_day,(
+	select count(distinct node_id) 
+	from connections 
+	where strftime('%s','now') - start < 60*60*24*7
+) as nodes_active_in_last_week;
 """
 
-select_nodes_tor = """
-SELECT visits_missed, count(*) AS num_members
-FROM nodes
-WHERE 
-	id IN (
+active_nodes_tor = """
+select (
+	select count(distinct node_id) 
+	from connections 
+	where strftime('%s','now') - start < 60*60*24 AND 	
+	node_id IN (
 		SELECT id 
 		FROM nodes
 		WHERE nodes.ip LIKE '%onion%'
-	)
-GROUP BY visits_missed
-ORDER BY visits_missed
+)) as nodes_active_in_last_day,(
+	select count(distinct node_id) 
+	from connections 
+	where strftime('%s','now') - start < 60*60*24*7 AND 	
+	node_id IN (
+		SELECT id 
+		FROM nodes
+		WHERE nodes.ip LIKE '%onion%'
+)) as nodes_active_in_last_week;
 """
 
 # Access and authorize our Twitter credentials from credentials.py
@@ -32,41 +43,36 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
-def execute(query, args={}):
+def copy():
     # Make a copy of the database
     try:
         shutil.copy('../crawler.db', 'server.db')
         # HACK to make sure the copying finishes
-        sleep(60)
+        sleep(60*5)
     except IOError as e:
         print("Unable to copy file. %s" % e)
     except:
         print("Unexpected error:", sys.exc_info())
+    
+
+def execute(query, args={}):
     # Open the database
     with sqlite3.connect('server.db') as conn:
         return conn.execute(query, args)
 
-def node_count(node_dict):
-    # Count all nodes visited last week
-    i = 0
-    num_nodes = 0
-    check_last = node_dict[-1]
-    while i < 8:
-        if check_last[0] >= i:
-            select_item = node_dict[i]
-            num_nodes += select_item[1]
-        i += 1
-    return num_nodes
-
-def run():
-    return node_count(execute(select_nodes).fetchall())
-
-def run_tor():
-    return node_count(execute(select_nodes_tor).fetchall())
-
 while True:
-    tweet = "Total number of reachable nodes past week: " + str(run()) + \
-        "\nOf which was tor-nodes: " + str(run_tor())
+    copy()
+    node_lst = execute(active_nodes).fetchall()
+    day = [i[0] for i in node_lst]
+    week = [i[1] for i in node_lst]
+    node_lst_tor = execute(active_nodes_tor).fetchall()
+    day_tor = [i[0] for i in node_lst_tor]
+    week_tor = [i[1] for i in node_lst_tor]
+    tweet = "Total number of reachable nodes:\n" + \
+        "Last day: " + str(day[0]) + \
+        "\nOf which was tor-nodes: " + str(day_tor[0]) + \
+        "\nLast week: " + str(week[0]) + \
+        "\nOf which was tor-nodes: " + str(week_tor[0])
     api.update_status(status=tweet)
     # Sleep 24h
     sleep(60*60*24)
