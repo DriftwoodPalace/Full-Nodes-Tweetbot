@@ -35,14 +35,9 @@ api = tweepy.API(auth)
 
 def copy():
     # Make a copy of the database
-    try:
-        shutil.copy('../crawler.db', 'server.db')
-        # HACK to make sure the copying finishes
-        sleep(60*10)
-    except IOError as e:
-        print("Unable to copy file. %s" % e)
-    except:
-        print("Unexpected error:", sys.exc_info())
+    con = sqlite3.connect('../crawler.db')
+    with sqlite3.connect('server.db') as bck:
+        con.backup(bck, pages=1, progress=None)
     
 
 def execute(query, args={}):
