@@ -10,11 +10,13 @@ active_nodes = """
 select (
 	select count(distinct node_id) 
 	from connections 
-	where strftime('%s','now') - start < 60*60*24
+	where strftime('%s','now') - start < 60*60*24 
+    AND version IS NOT NULL
 ) as nodes_active_in_last_day,(
 	select count(distinct node_id) 
 	from connections 
-	where strftime('%s','now') - start < 60*60*24*7
+	where strftime('%s','now') - start < 60*60*24*7 
+    AND version IS NOT NULL
 ) as nodes_active_in_last_week;
 """
 
@@ -22,7 +24,8 @@ active_nodes_tor = """
 select (
 	select count(distinct node_id) 
 	from connections 
-	where strftime('%s','now') - start < 60*60*24 AND 	
+	where strftime('%s','now') - start < 60*60*24 
+    AND version IS NOT NULL AND 	
 	node_id IN (
 		SELECT id 
 		FROM nodes
@@ -30,7 +33,8 @@ select (
 )) as nodes_active_in_last_day,(
 	select count(distinct node_id) 
 	from connections 
-	where strftime('%s','now') - start < 60*60*24*7 AND 	
+	where strftime('%s','now') - start < 60*60*24*7 
+    AND version IS NOT NULL AND 	
 	node_id IN (
 		SELECT id 
 		FROM nodes
