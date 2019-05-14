@@ -130,5 +130,5 @@ while True:
             + " (" + difference_tot[0] + ")" + "\nOf which was tor-nodes: " \
                 + str(tor_node_count) + " (" + difference_tot[1] + ")"
     api.update_with_media(filename=day_png, status=tweet)
-    # Sleep 24h
-    sleep(60*60*24)
+    # Sleep 7 days
+    sleep(60*60*24*7)
