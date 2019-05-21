@@ -117,7 +117,7 @@ def plotter():
     fig.savefig(day_png)
 
 while True:
-    #copy()
+    copy()
     node_lst = get_values(active_nodes).fetchall()
     week = [i[0] for i in node_lst]
     node_lst_tor = get_values(active_nodes_tor).fetchall()
